@@ -91,3 +91,7 @@ sp/src/vgui2/*.pdb
 
 # Build support files
 sp/src/devtools/gcc9+support.o
+
+# WF Specific
+/sp/src/responserules/runtime/Debug
+/sp/src/vgui2/vgui_controls/Debug
