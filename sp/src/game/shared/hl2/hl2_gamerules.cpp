@@ -322,6 +322,10 @@ ConVar	sk_plr_dmg_pistol		( "sk_plr_dmg_pistol","0", FCVAR_REPLICATED );
 ConVar	sk_npc_dmg_pistol		( "sk_npc_dmg_pistol","0", FCVAR_REPLICATED);
 ConVar	sk_max_pistol			( "sk_max_pistol","0", FCVAR_REPLICATED);
 
+ConVar	sk_plr_dmg_nailgun		("sk_plr_dmg_nailgun", "0", FCVAR_REPLICATED);
+ConVar	sk_npc_dmg_nailgun		("sk_npc_dmg_nailgun", "0", FCVAR_REPLICATED);
+ConVar	sk_max_nailgun			("sk_max_nailgun", "0", FCVAR_REPLICATED);
+
 ConVar	sk_plr_dmg_smg1			( "sk_plr_dmg_smg1","0", FCVAR_REPLICATED );
 ConVar	sk_npc_dmg_smg1			( "sk_npc_dmg_smg1","0", FCVAR_REPLICATED);
 ConVar	sk_max_smg1				( "sk_max_smg1","0", FCVAR_REPLICATED);
@@ -2127,6 +2131,7 @@ CAmmoDef *GetAmmoDef()
 		def.AddAmmoType("SMG1",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	"sk_plr_dmg_smg1",			"sk_npc_dmg_smg1",			"sk_max_smg1",			BULLET_IMPULSE(200, 1225), 0 );
 		def.AddAmmoType("357",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	"sk_plr_dmg_357",			"sk_npc_dmg_357",			"sk_max_357",			BULLET_IMPULSE(800, 5000), 0 );
 		def.AddAmmoType("XBowBolt",			DMG_BULLET,					TRACER_LINE,			"sk_plr_dmg_crossbow",		"sk_npc_dmg_crossbow",		"sk_max_crossbow",		BULLET_IMPULSE(800, 8000), 0 );
+		def.AddAmmoType("Nailgun",			DMG_BULLET,					TRACER_LINE,			"sk_plr_dmg_nailgun",		"sk_npc_dmg_nailgun",		"sk_max_nailgun",		BULLET_IMPULSE(200, 1225), 0);
 
 		def.AddAmmoType("Buckshot",			DMG_BULLET | DMG_BUCKSHOT,	TRACER_LINE,			"sk_plr_dmg_buckshot",		"sk_npc_dmg_buckshot",		"sk_max_buckshot",		BULLET_IMPULSE(400, 1200), 0 );
 		def.AddAmmoType("RPG_Round",		DMG_BURN,					TRACER_NONE,			"sk_plr_dmg_rpg_round",		"sk_npc_dmg_rpg_round",		"sk_max_rpg_round",		0, 0 );

@@ -648,6 +648,40 @@ public:
 
 LINK_ENTITY_TO_CLASS( item_ammo_ar2_altfire, CItem_AR2AltFireRound );
 
+// ========================================================================
+//	>> Nailgun Rounds
+// ========================================================================
+class CItem_NailgunRounds : public CItem
+{
+public:
+	DECLARE_CLASS(CItem_NailgunRounds, CItem);
+
+	void Spawn(void)
+	{
+		Precache();
+		SetModel("models/items/boxsrounds.mdl");
+		BaseClass::Spawn();
+	}
+	void Precache(void)
+	{
+		PrecacheModel("models/items/boxsrounds.mdl");
+	}
+	bool MyTouch(CBasePlayer* pPlayer)
+	{
+		if (ITEM_GiveAmmo(pPlayer, SIZE_AMMO_NAILGUN, "Nailgun"))
+		{
+			if (g_pGameRules->ItemShouldRespawn(this) == GR_ITEM_RESPAWN_NO)
+			{
+				UTIL_Remove(this);
+			}
+			return true;
+		}
+		return false;
+	}
+};
+LINK_ENTITY_TO_CLASS(item_box_nailgunrounds, CItem_NailgunRounds);
+LINK_ENTITY_TO_CLASS(item_ammo_nailgun, CItem_NailgunRounds);
+
 // ==================================================================
 // Ammo crate which will supply infinite ammo of the specified type
 // ==================================================================
@@ -669,6 +703,7 @@ enum
 	AMMOCRATE_SLAM,
 	AMMOCRATE_EMPTY,
 #endif
+	AMMOCRATE_NAILGUN,
 	NUM_AMMO_CRATE_TYPES,
 };
 
@@ -773,6 +808,7 @@ const char *CItem_AmmoCrate::m_lpzModelNames[NUM_AMMO_CRATE_TYPES] =
 #ifdef MAPBASE
 	"models/items/ammocrate_slam.mdl",	    // slam
 	"models/items/ammocrate_empty.mdl",	    // empty
+	"models/items/ammocrate_pistol.mdl",	// Nailgun, TODO [WF] Create a proper nailgun ammo crate
 #endif
 };
 
@@ -793,6 +829,7 @@ const char *CItem_AmmoCrate::m_lpzAmmoNames[NUM_AMMO_CRATE_TYPES] =
 	"slam",
 	NULL,
 #endif
+	"Nailgun",
 };
 
 // Ammo amount given per +use
@@ -812,6 +849,7 @@ int CItem_AmmoCrate::m_nAmmoAmounts[NUM_AMMO_CRATE_TYPES] =
 	5,		// SLAM
 	NULL,	// Empty
 #endif
+	100,	// Nailgun
 };
 
 const char *CItem_AmmoCrate::m_pGiveWeapon[NUM_AMMO_CRATE_TYPES] =
@@ -830,6 +868,7 @@ const char *CItem_AmmoCrate::m_pGiveWeapon[NUM_AMMO_CRATE_TYPES] =
 	"weapon_slam",		// SLAM
 	NULL,	// Empty
 #endif
+	NULL, // Nailgun
 };
 
 #define	AMMO_CRATE_CLOSE_DELAY	1.5f
