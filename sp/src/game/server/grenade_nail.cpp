@@ -114,6 +114,7 @@ void CGrenadeNail::Precache(void)
 	// call base precache
 	PrecacheModel(GRENADE_MODEL);
 	PrecacheModel(GRENADE_BEAM_SPRITE);
+	PrecacheScriptSound("NPC_Hunter.FlechetteExplode");
 
 	g_sModelIndexFireball = CBaseEntity::PrecacheModel("sprites/zerogxplode.vmt");// fireball
 	g_sModelIndexWExplosion = CBaseEntity::PrecacheModel("sprites/WXplo1.vmt");// underwater fireball
@@ -232,6 +233,8 @@ void CGrenadeNail::Explode(trace_t* pTrace, int bitsDamageType)
 {
 	// Called after detonation, we should
 	//		- Perform any explosion effects
+
+	EmitSound("NPC_Hunter.FlechetteExplode");
 
 	// Essentially copied from the base class but with some custom effects
 	Vector vecAbsOrigin = GetAbsOrigin();

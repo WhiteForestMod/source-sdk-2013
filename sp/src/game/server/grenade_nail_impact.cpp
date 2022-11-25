@@ -52,6 +52,8 @@ void CGrenadeNailImpact::Spawn(void)
 	m_bBeamActive = true;
 	m_fNextSparkTime = gpGlobals->curtime + random->RandomFloat(0.5, 1.5);
 
+	EmitSound( "Roller.Impact" );
+
 	SetThink(&CGrenadeNailImpact::Thinking);
 	SetNextThink(gpGlobals->curtime + 0.1f);
 }
@@ -61,6 +63,8 @@ void CGrenadeNailImpact::Precache(void)
 	PrecacheModel(GRENADE_IMPACT_MODEL);
 	PrecacheModel(GRENADE_BEAM_SPRITE);
 	PrecacheModel(GRENADE_GLOW_SPRITE);
+
+	PrecacheScriptSound("Roller.Impact");
 }
 
 void CGrenadeNailImpact::Thinking(void)
@@ -88,6 +92,8 @@ void CGrenadeNailImpact::Thinking(void)
 	{
 		trace_t trace;
 		UTIL_TraceLine(GetAbsOrigin(), m_vElectricitySource, MASK_SOLID, this, COLLISION_GROUP_NONE, &trace);
+
+		PerformDamage(&trace);
 	}
 
 	SetThink(&CGrenadeNailImpact::Thinking);
@@ -99,7 +105,7 @@ void CGrenadeNailImpact::PerformDamage(trace_t* trace)
 	CBaseEntity* damageTarget = trace->m_pEnt;
 	if (damageTarget)
 	{
-		// If the player touches the beam then we want to damage them a bit, otherwise dissolve
+		// If the player touches the beam then we want to damage them a bit, otherwise ragdoll
 		if (damageTarget->IsPlayer())
 		{
 			CTakeDamageInfo info(this, this, 1.0f, DMG_SHOCK);
@@ -146,6 +152,7 @@ CBeam* CGrenadeNailImpact::CreateElectricalBeam()
 	beam->SetStartPos(GetAbsOrigin());
 	beam->PointEntInit(m_vElectricitySource, this);
 	beam->SetBrightness(255);
+	beam->SetNoise(3.0f);
 
 	float scrollOffset = gpGlobals->curtime + 15.5;
 	beam->SetScrollRate(scrollOffset);
