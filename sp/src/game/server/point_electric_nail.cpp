@@ -36,7 +36,7 @@
 extern ConVar sk_plr_dmg_nailgun;
 extern ConVar sk_npc_dmg_nailgun;
 
-ConVar wf_nail_search_radius("wf_nail_search_radius", "50", FCVAR_ARCHIVE, "Determines how far electricity can jump between nails");
+ConVar wf_nail_search_radius("wf_nail_search_radius", "100", FCVAR_ARCHIVE, "Determines how far electricity can jump between nails");
 
 #define NAIL_MODEL "models/props_mining/railroad_spike01.mdl"
 #define NAIL_AIR_VELOCITY	2500
@@ -97,6 +97,8 @@ void CPointElectricNail::SpawnAtPosition(const Vector& position)
 	SetSolid(SOLID_VPHYSICS);
 	SetAbsOrigin(position);
 	SetUse(&CPointElectricNail::PickupNail);
+
+	m_flNextSparkTime = gpGlobals->curtime + random->RandomFloat(0.5, 1.5);
 
 	NailThink();
 }
@@ -174,6 +176,16 @@ void CPointElectricNail::Deactivate(bool shouldFireOutput)
 /// </summary>
 void CPointElectricNail::NailThink()
 {
+	if (gpGlobals->curtime > m_flNextSparkTime)
+	{
+		m_flNextSparkTime = gpGlobals->curtime + random->RandomFloat(0.5, 1.5);
+		
+		if (m_bIsActive)
+		{
+			g_pEffects->Sparks(GetAbsOrigin());
+		}
+	}
+
 	if (m_bShouldNotSearchForChildren)
 	{
 		SetThink(NULL);
@@ -255,6 +267,7 @@ CBeam* CPointElectricNail::DrawBeamForChild(CPointElectricNail* child)
 	beam->SetStartPos(GetAbsOrigin());
 	beam->PointEntInit(child->GetAbsOrigin(), this);
 	beam->SetBrightness(255);
+	beam->SetNoise(5.0f);
 
 	float scrollOffset = gpGlobals->curtime + 15.5;
 	beam->SetScrollRate(scrollOffset);
@@ -283,7 +296,7 @@ void CPointElectricNail::PerformDamage(trace_t* trace)
 		// If the player touches the beam then we want to damage them a bit, otherwise dissolve
 		if (damageTarget->IsPlayer())
 		{
-			CTakeDamageInfo info(this, this, 5.0f, DMG_SHOCK);
+			CTakeDamageInfo info(this, this, 1.0f, DMG_SHOCK);
 			AddMultiDamage(info, this);
 			damageTarget->DispatchTraceAttack(info, GetAbsOrigin(), trace);
 			ApplyMultiDamage();

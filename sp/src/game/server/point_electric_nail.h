@@ -44,6 +44,8 @@ public:
 	COutputEvent m_OnDeactivated;
 
 private:
+	float m_flNextSparkTime;
+
 	CHandle<CSprite> m_CGlowSprite;
 	CHandle<CBeam> m_CFirstChildBeam;
 
