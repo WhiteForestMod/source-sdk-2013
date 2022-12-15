@@ -176,7 +176,7 @@ void CPointElectricNail::Deactivate(bool shouldFireOutput)
 /// </summary>
 void CPointElectricNail::NailThink()
 {
-	if (gpGlobals->curtime > m_flNextSparkTime)
+	if (gpGlobals->curtime > m_flNextSparkTime && !HasSpawnFlags(SF_NAILS_NO_SPARK))
 	{
 		m_flNextSparkTime = gpGlobals->curtime + random->RandomFloat(0.5, 1.5);
 		

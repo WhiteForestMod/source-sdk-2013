@@ -11,6 +11,8 @@
 #define POINT_ELECTRIC_NAIL_H
 #pragma once
 
+#define SF_NAILS_NO_SPARK	1<<0
+
 class CPointElectricNail : public CBaseAnimating
 {
 public:
