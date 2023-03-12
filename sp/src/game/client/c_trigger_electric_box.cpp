@@ -5,11 +5,12 @@
 #include "utllinkedlist.h"
 #include "beam_flags.h"
 #include "gamestringpool.h"
+#include "iviewrender_beams.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#define SPRITE_NAME "sprites/physbeam.vmt";
+#define SPRITE_NAME "sprites/bluelight1.vmt";
 
 // Simple class to hold the received message
 class CTriggerElectricBoxTeslaInfo
@@ -40,6 +41,8 @@ public:
 
 protected:
 	CUtlLinkedList<CTriggerElectricBoxTeslaInfo, int> m_QueuedTeslas;
+
+	void DrawBeam(CTriggerElectricBoxTeslaInfo teslaInfo);
 };
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerElectricBox, DT_TriggerElectricBox, CTriggerElectricBox)
@@ -86,15 +89,39 @@ void C_TriggerElectricBox::ReceiveMessage(int classID, bf_read& msg)
 
 void C_TriggerElectricBox::ClientThink()
 {
-	// TODO: Replace FX_BuildTesla with something that doesn't look like trash
-
 	FOR_EACH_LL(m_QueuedTeslas, i)
 	{
-		C_BaseEntity* pEntity = ClientEntityList().GetEnt(m_QueuedTeslas[i].m_iEntIndex);	
-		FX_BuildTesla(pEntity, m_QueuedTeslas[i].m_vStart, m_QueuedTeslas[i].m_vEnd, "sprites/physbeam.vmt", m_QueuedTeslas[i].m_fThickness, m_QueuedTeslas[i].m_vColor, FBEAM_ONLYNOISEONCE, m_QueuedTeslas[i].m_fVisibleTime);
-
+		DrawBeam(m_QueuedTeslas[i]);
 	}
 	m_QueuedTeslas.Purge();
 
 	SetNextClientThink(CLIENT_THINK_NEVER);
+}
+
+void C_TriggerElectricBox::DrawBeam(CTriggerElectricBoxTeslaInfo teslaInfo)
+{
+	BeamInfo_t beamInfo;
+	beamInfo.m_nType = TE_BEAMPOINTS;
+	beamInfo.m_vecStart = teslaInfo.m_vStart;
+	beamInfo.m_vecEnd = teslaInfo.m_vEnd;
+	beamInfo.m_pszModelName = SPRITE_NAME;
+	beamInfo.m_flHaloScale = 1.0;
+	beamInfo.m_flLife = teslaInfo.m_fVisibleTime;
+	beamInfo.m_flWidth = teslaInfo.m_fThickness;
+	beamInfo.m_flEndWidth = 1;
+	beamInfo.m_flFadeLength = 0.3;
+	beamInfo.m_flAmplitude = 8;
+	beamInfo.m_flBrightness = 200.0;
+	beamInfo.m_flSpeed = 0.0;
+	beamInfo.m_nStartFrame = 0.0;
+	beamInfo.m_flFrameRate = 1.0;
+	beamInfo.m_flRed = teslaInfo.m_vColor.x * 255.0;
+	beamInfo.m_flGreen = teslaInfo.m_vColor.y * 255.0;
+	beamInfo.m_flBlue = teslaInfo.m_vColor.z * 255.0;
+	beamInfo.m_nSegments = 10;
+	beamInfo.m_bRenderable = true;
+	beamInfo.m_nFlags = FBEAM_ONLYNOISEONCE;
+	beamInfo.m_flSpeed = gpGlobals->curtime + 15.5f;
+
+	beams->CreateBeamPoints(beamInfo);
 }

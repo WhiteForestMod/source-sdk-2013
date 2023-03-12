@@ -85,7 +85,7 @@ CTriggerElectricBox::CTriggerElectricBox()
 
 void CTriggerElectricBox::Precache()
 {
-	PrecacheModel("sprites/physbeam.vmt");
+	PrecacheModel("sprites/bluelight1.vmt");
 	BaseClass::Precache();
 }
 
@@ -108,7 +108,10 @@ void CTriggerElectricBox::DetectorThink()
 
 	if (m_bIsActive && (m_fNextTeslaTime < gpGlobals->curtime))
 	{
-		TransmitArc();
+		for (int i = 0; i < m_iFrequency; i++)
+		{
+			TransmitArc();
+		}
 
 		m_fNextTeslaTime = (gpGlobals->curtime + RandomFloat(m_flArcInterval[0], m_flArcInterval[1]));
 	}
@@ -165,6 +168,10 @@ void CTriggerElectricBox::TransmitArc()
 	Vector m_arcEndPoint;
 	CollisionProp()->RandomPointInBounds(Vector(0, 0, 0), Vector(1, 1, 1), &m_arcEndPoint);
 
+	// TEMP HACK; Set z = 1 to make testing obvious
+	m_arcStartPoint.z = 1;
+	m_arcEndPoint.z = 1;
+
 	// Grab our entity index
 	int entityIndex = entindex();
 
@@ -173,17 +180,6 @@ void CTriggerElectricBox::TransmitArc()
 
 	// Calculate how long the arc should be visible for
 	float visibleTime = RandomFloat(m_flTimeVisible[0], m_flTimeVisible[1]);
-
-
-	/*DevMsg("ELEC BOX SEND MESSAGE with the following information; \n");
-	DevMsg("Position: %f %f %f \n", coords.x, coords.y, coords.z);
-	DevMsg("Entity Index: %i \n", entityIndex);
-	DevMsg("Color R: %02X \n", m_Color.r);
-	DevMsg("Color G: %02X \n", m_Color.g);
-	DevMsg("Color B: %02X \n", m_Color.b);
-	DevMsg("Color A: %02X \n", m_Color.a);
-	DevMsg("Thickness: %f \n", thickness);
-	DevMsg("Visible Time: %f \n",visibleTime);*/
 
 	// Transmit all the info we need
 	EntityMessageBegin(this);
