@@ -93,6 +93,8 @@ public:
 };
 
 void FX_Tesla( const CTeslaInfo &teslaInfo );
+void FX_BuildTesla(C_BaseEntity* pEntity, const Vector& vecOrigin, const Vector& vecEnd, const char* pModelName, float flBeamWidth, const Vector& vColor, int nFlags, float flTimeVisible);
+
 extern ConVar r_decals;
 
 extern void FX_CacheMaterialHandles( void );
