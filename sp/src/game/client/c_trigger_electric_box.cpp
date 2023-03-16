@@ -6,6 +6,8 @@
 #include "beam_flags.h"
 #include "gamestringpool.h"
 #include "iviewrender_beams.h"
+#include "IEffects.h"
+#include "view.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -43,6 +45,7 @@ protected:
 	CUtlLinkedList<CTriggerElectricBoxTeslaInfo, int> m_QueuedTeslas;
 
 	void DrawBeam(CTriggerElectricBoxTeslaInfo teslaInfo);
+	void DrawBeamPoint(Vector beamPoint, float visibleTime);
 };
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerElectricBox, DT_TriggerElectricBox, CTriggerElectricBox)
@@ -82,9 +85,12 @@ void C_TriggerElectricBox::ReceiveMessage(int classID, bf_read& msg)
 	teslaInfo.m_fVisibleTime = msg.ReadFloat();
 
 	// Add the info to the queue for processing by the think logic
-	m_QueuedTeslas.AddToTail(teslaInfo);
+	//m_QueuedTeslas.AddToTail(teslaInfo);
 
-	SetNextClientThink(CLIENT_THINK_ALWAYS);
+	// Disabled for now, will see if directly drawing the beams is a good idea
+	DrawBeam(teslaInfo);
+
+	//SetNextClientThink(CLIENT_THINK_ALWAYS);
 }
 
 void C_TriggerElectricBox::ClientThink()
@@ -124,4 +130,36 @@ void C_TriggerElectricBox::DrawBeam(CTriggerElectricBoxTeslaInfo teslaInfo)
 	beamInfo.m_flSpeed = gpGlobals->curtime + 15.5f;
 
 	beams->CreateBeamPoints(beamInfo);
+	DrawBeamPoint(teslaInfo.m_vStart, teslaInfo.m_fVisibleTime);
+	DrawBeamPoint(teslaInfo.m_vEnd, teslaInfo.m_fVisibleTime);
+}
+
+void C_TriggerElectricBox::DrawBeamPoint(Vector beamPoint, float visibleTime)
+{
+	Vector vecFlash = beamPoint;
+	Vector vecForward;
+	AngleVectors(MainViewAngles(), &vecForward);
+	vecFlash -= (vecForward);
+
+	CSmartPtr<CSimpleEmitter> pSimple = CSimpleEmitter::Create("dust");
+	pSimple->SetSortOrigin(vecFlash);
+	SimpleParticle* pParticle;
+	pParticle = (SimpleParticle*)pSimple->AddParticle(sizeof(SimpleParticle), pSimple->GetPMaterial("effects/tesla_glow_noz"), vecFlash);
+	if (pParticle != NULL)
+	{
+		pParticle->m_flLifetime = 0.0f;
+		pParticle->m_flDieTime = visibleTime;
+		pParticle->m_vecVelocity = vec3_origin;
+		Vector color(1, 1, 1);
+		float  colorRamp = RandomFloat(0.75f, 1.25f);
+		pParticle->m_uchColor[0] = MIN(1.0f, color[0] * colorRamp) * 255.0f;
+		pParticle->m_uchColor[1] = MIN(1.0f, color[1] * colorRamp) * 255.0f;
+		pParticle->m_uchColor[2] = MIN(1.0f, color[2] * colorRamp) * 255.0f;
+		pParticle->m_uchStartSize = RandomFloat(2, 4);
+		pParticle->m_uchEndSize = pParticle->m_uchStartSize - 2;
+		pParticle->m_uchStartAlpha = 255;
+		pParticle->m_uchEndAlpha = 10;
+		pParticle->m_flRoll = RandomFloat(0, 360);
+		pParticle->m_flRollDelta = 0;
+	}
 }

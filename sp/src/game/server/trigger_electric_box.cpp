@@ -31,6 +31,12 @@ public:
 	// The colour of the arcs
 	color32 m_Color;
 
+	// Z offset of the arc
+	float m_flZOffet;
+
+	// Distance between arc start & end (min / max)
+	float m_flArcDistance[2];
+
 	// Time between Tesla arcs (min / max)
 	float m_flArcInterval[2];
 
@@ -59,6 +65,14 @@ DEFINE_KEYFIELD(m_Color, FIELD_COLOR32, "Color"),
 
 DEFINE_KEYFIELD(m_iFrequency, FIELD_INTEGER, "frequency"),
 
+DEFINE_KEYFIELD(m_flZOffet, FIELD_FLOAT, "z_offset"),
+
+DEFINE_KEYFIELD(m_flArcDistance[0], FIELD_FLOAT, "dist_min"),
+DEFINE_KEYFIELD(m_flArcDistance[1], FIELD_FLOAT, "dist_max"),
+
+DEFINE_KEYFIELD(m_flThickness[0], FIELD_FLOAT, "thick_min"),
+DEFINE_KEYFIELD(m_flThickness[1], FIELD_FLOAT, "thick_max"),
+
 DEFINE_KEYFIELD(m_flThickness[0], FIELD_FLOAT, "thick_min"),
 DEFINE_KEYFIELD(m_flThickness[1], FIELD_FLOAT, "thick_max"),
 
@@ -86,6 +100,7 @@ CTriggerElectricBox::CTriggerElectricBox()
 void CTriggerElectricBox::Precache()
 {
 	PrecacheModel("sprites/bluelight1.vmt");
+	PrecacheModel("effects/tesla_glow_noz");
 	BaseClass::Precache();
 }
 
@@ -160,17 +175,43 @@ void CTriggerElectricBox::UpdateState(bool activeNailInVolume)
 
 void CTriggerElectricBox::TransmitArc()
 {
-	// Choose a random start point
-	Vector m_arcStartPoint;
-	CollisionProp()->RandomPointInBounds(Vector(0, 0, 0), Vector(1, 1, 1), &m_arcStartPoint);
+	// Choose a random start point & compute end point
+	Vector arcStartPoint;
+	Vector arcEndPoint;
+	
+	CCollisionProperty *collisionProperty = CollisionProp();
+	collisionProperty->RandomPointInBounds(Vector(0, 0, 0), Vector(1, 1, 0), &arcStartPoint);
+	float arcDistance = RandomFloat(m_flArcDistance[0], m_flArcDistance[1]);
 
-	// Choose a random end point
-	Vector m_arcEndPoint;
-	CollisionProp()->RandomPointInBounds(Vector(0, 0, 0), Vector(1, 1, 1), &m_arcEndPoint);
+	int tries = 3;
+	do
+	{
+		// Shout out to chatGPT for helping me with the maths
+		float theta = RandomFloat(0, 2 * M_PI);
+		float x = arcDistance * cosf(theta);
+		float y = arcDistance * sinf(theta);
 
-	// TEMP HACK; Set z = 1 to make testing obvious
-	m_arcStartPoint.z = 1;
-	m_arcEndPoint.z = 1;
+		arcEndPoint.z = arcStartPoint.z;
+		arcEndPoint.x = arcStartPoint.x + x;
+		arcEndPoint.y = arcStartPoint.y + y;
+
+		if (collisionProperty->IsPointInBounds(arcEndPoint))
+		{
+			break;
+		}
+
+		tries--;
+		if (tries == 0)
+		{
+			// Give up, we must have selected a poor start position / angle
+			return;
+		}
+
+	} while (tries > 0);
+
+	// Apply our z offset (we don't do it in the loop as the specified offset might put us outside the bbox)
+	arcStartPoint.z = arcStartPoint.z + m_flZOffet;
+	arcEndPoint.z = arcEndPoint.z + m_flZOffet;
 
 	// Grab our entity index
 	int entityIndex = entindex();
@@ -183,8 +224,8 @@ void CTriggerElectricBox::TransmitArc()
 
 	// Transmit all the info we need
 	EntityMessageBegin(this);
-		WRITE_VEC3COORD(m_arcStartPoint);
-		WRITE_VEC3COORD(m_arcEndPoint);
+		WRITE_VEC3COORD(arcStartPoint);
+		WRITE_VEC3COORD(arcEndPoint);
 		WRITE_SHORT(entityIndex);
 		WRITE_BYTE(m_Color.r);
 		WRITE_BYTE(m_Color.g);
