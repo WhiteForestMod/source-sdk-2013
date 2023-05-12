@@ -3,6 +3,7 @@
 #include "utllinkedlist.h"
 #include "point_electric_nail.h"
 
+#define FL_NO_ARC 1<<0
 
 class CTriggerElectricBox : public CBaseTrigger
 {
@@ -175,6 +176,9 @@ void CTriggerElectricBox::UpdateState(bool activeNailInVolume)
 
 void CTriggerElectricBox::TransmitArc()
 {
+	if (HasSpawnFlags(FL_NO_ARC))
+		return;
+
 	// Choose a random start point & compute end point
 	Vector arcStartPoint;
 	Vector arcEndPoint;
