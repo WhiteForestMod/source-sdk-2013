@@ -79,6 +79,7 @@ private:
 	float	m_flHaloScale;
 	string_t	m_iszHaloMaterial;
 	string_t	m_iszSpotlightMaterial;
+	bool	m_bSpotlightIgnoreWorld;
 #endif
 
 public:
@@ -108,6 +109,7 @@ BEGIN_DATADESC( CPointSpotlight )
 	DEFINE_KEYFIELD( m_flHaloScale, FIELD_FLOAT, "HaloScale" ),
 	DEFINE_KEYFIELD( m_iszHaloMaterial, FIELD_STRING, "HaloMaterial" ),
 	DEFINE_KEYFIELD( m_iszSpotlightMaterial, FIELD_STRING, "SpotlightMaterial" ),
+	DEFINE_KEYFIELD( m_bSpotlightIgnoreWorld, FIELD_BOOLEAN, "IgnoreWorld"),
 #endif
 
 	// Inputs
@@ -381,7 +383,11 @@ void CPointSpotlight::SpotlightCreate(void)
 	AngleVectors( GetAbsAngles(), &m_vSpotlightDir );
 
 	trace_t tr;
-	UTIL_TraceLine( GetAbsOrigin(), GetAbsOrigin() + m_vSpotlightDir * m_flSpotlightMaxLength, MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr);
+#ifdef MAPBASE
+	UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + m_vSpotlightDir * m_flSpotlightMaxLength, (m_bSpotlightIgnoreWorld ? CONTENTS_EMPTY : MASK_SOLID_BRUSHONLY), this, COLLISION_GROUP_NONE, &tr);
+#else
+	UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + m_vSpotlightDir * m_flSpotlightMaxLength, MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr);
+#endif
 
 	m_hSpotlightTarget = (CSpotlightEnd*)CreateEntityByName( "spotlight_end" );
 	m_hSpotlightTarget->Spawn();
